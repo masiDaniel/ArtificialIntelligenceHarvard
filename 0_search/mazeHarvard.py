@@ -6,32 +6,34 @@ class Node():
         self.parent = parent
         self.action = action
 
+
 class StackFrontier():
     def __init__(self):
         self.frontier = []
-    
+
     def add(self, node):
         self.frontier.append(node)
-    
+
     def contains_state(self, state):
         return any(node.state == state for node in self.frontier)
-    
+
     def empty(self):
-        return len(self.frontier == 0)
-    
+        return len(self.frontier) == 0
+
     def remove(self):
         if self.empty():
-            raise Exception("Empty  Frontier")
+            raise Exception("empty frontier")
         else:
             node = self.frontier[-1]
             self.frontier = self.frontier[:-1]
             return node
 
+
 class QueueFrontier(StackFrontier):
 
     def remove(self):
         if self.empty():
-            raise Exception("Empty Frontier")
+            raise Exception("empty frontier")
         else:
             node = self.frontier[0]
             self.frontier = self.frontier[1:]
@@ -41,22 +43,22 @@ class Maze():
 
     def __init__(self, filename):
 
-        # Read file and set height and widht of the maze 
+        # Read file and set height and width of maze
         with open(filename) as f:
             contents = f.read()
-        
-        # validate start and goal
+
+        # Validate start and goal
         if contents.count("A") != 1:
-            raise Exception("Maze must have exactly one start point")
+            raise Exception("maze must have exactly one start point")
         if contents.count("B") != 1:
-            raise Exception("Maze must have exactly one goal")
-        
-        #determine height and width of maze 
+            raise Exception("maze must have exactly one goal")
+
+        # Determine height and width of maze
         contents = contents.splitlines()
         self.height = len(contents)
         self.width = max(len(line) for line in contents)
 
-        #keep track of walls
+        # Keep track of walls
         self.walls = []
         for i in range(self.height):
             row = []
@@ -75,16 +77,16 @@ class Maze():
                 except IndexError:
                     row.append(False)
             self.walls.append(row)
-        
 
         self.solution = None
+
 
     def print(self):
         solution = self.solution[1] if self.solution is not None else None
         print()
         for i, row in enumerate(self.walls):
-            for j, row in enumerate(row):
-                if row:
+            for j, col in enumerate(row):
+                if col:
                     print("█", end="")
                 elif (i, j) == self.start:
                     print("A", end="")
@@ -96,8 +98,9 @@ class Maze():
                     print(" ", end="")
             print()
         print()
-    
-    def neighbours(self, state):
+
+
+    def neighbors(self, state):
         row, col = state
         candidates = [
             ("up", (row - 1, col)),
@@ -107,10 +110,11 @@ class Maze():
         ]
 
         result = []
-        for action, (r,c) in candidates:
+        for action, (r, c) in candidates:
             if 0 <= r < self.height and 0 <= c < self.width and not self.walls[r][c]:
-                result.append((action, (r,c)))
+                result.append((action, (r, c)))
         return result
+
 
     def solve(self):
         """Finds a solution to maze, if one exists."""
@@ -120,7 +124,7 @@ class Maze():
 
         # Initialize frontier to just the starting position
         start = Node(state=self.start, parent=None, action=None)
-        frontier = StackFrontier()
+        frontier = QueueFrontier()
         frontier.add(start)
 
         # Initialize an empty explored set
